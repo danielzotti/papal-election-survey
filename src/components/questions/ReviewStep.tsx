@@ -1,14 +1,36 @@
 import React from 'react';
 import { useSurvey } from '../../context/SurveyContext';
 import QuestionLayout from './QuestionLayout';
+import { supabase } from '../../lib/supabase';
 
 const ReviewStep: React.FC = () => {
   const { surveyData, prevStep, completeSurvey } = useSurvey();
 
-  const handleSubmit = () => {
-    // In a real application, you would send the data to a server here
-    console.log('Submitting predictions:', surveyData);
-    completeSurvey();
+  const handleSubmit = async () => {
+    try {
+      const { error } = await supabase
+        .from('survey')
+        .insert([
+          {
+            age: Number(surveyData.age),
+            gender: surveyData.gender,
+            country: surveyData.country,
+            race: surveyData.race,
+            personality: surveyData.personality,
+            name: surveyData.name,
+          },
+        ]);
+
+      if (error) {
+        console.error('Error saving survey:', error);
+        alert('Failed to save survey.');
+      }
+    } catch (err) {
+      console.error('Error saving survey:', err);
+      alert('Failed to save survey. Please try again.');
+    } finally {
+      completeSurvey();
+    }
   };
 
   return (
